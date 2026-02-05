@@ -1,248 +1,279 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="utf-8">
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>CryptoQuest</title>
-
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-
-*{margin:0;padding:0;box-sizing:border-box}
-
-body{
-    font-family:Inter,sans-serif;
-    background:radial-gradient(ellipse at top,#0a0a1f 0%,#000 70%);
-    color:#fff;
-    min-height:100vh;
-    overflow-x:hidden;
-}
-
-.stars-bg{position:fixed;inset:0;z-index:1;pointer-events:none}
-.star{position:absolute;background:#4da8ff;border-radius:50%;opacity:.5}
-
-.container{
-    max-width:400px;
-    margin:0 auto;
-    padding:28px 24px 120px;
-    position:relative;
-    z-index:10;
-}
-
-.header{text-align:center;margin-bottom:32px}
-.logo{
-    font-size:36px;
-    font-weight:700;
-    background:linear-gradient(135deg,#4da8ff,#a8d8ff);
-    -webkit-background-clip:text;
-    -webkit-text-fill-color:transparent;
-}
-.subtitle{
-    margin-top:6px;
-    font-size:14px;
-    color:#b8b8d0;
-    background:rgba(20,20,35,.8);
-    padding:8px 14px;
-    border-radius:20px;
-    display:inline-block;
-}
-
-.stats-grid{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:16px;
-    margin-bottom:28px;
-}
-
-.stat-card{
-    background:rgba(20,20,35,.9);
-    border:1px solid rgba(77,168,255,.2);
-    border-radius:18px;
-    padding:22px;
-    text-align:center;
-}
-
-.balance{
-    font-size:28px;
-    font-weight:700;
-    background:linear-gradient(135deg,#4da8ff,#7dc8ff);
-    -webkit-background-clip:text;
-    -webkit-text-fill-color:transparent;
-}
-.stat-value{font-size:26px;color:#4da8ff;font-weight:700}
-.stat-label{font-size:14px;color:#9a9ab0}
-
-.map-section{
-    background:rgba(10,10,25,.95);
-    border-radius:22px;
-    padding:22px;
-    margin-bottom:32px;
-    border:1px solid rgba(77,168,255,.15);
-}
-
-.map-header{
-    color:#4da8ff;
-    font-weight:600;
-    margin-bottom:14px;
-}
-
-#map{
-    width:100%;
-    height:260px;
-    border-radius:16px;
-}
-
-.action-section{display:flex;flex-direction:column;gap:16px}
-
-.btn-main{
-    background:linear-gradient(135deg,rgba(77,168,255,.25),rgba(125,200,255,.1));
-    border:2px solid rgba(77,168,255,.5);
-    border-radius:18px;
-    padding:22px;
-    font-size:18px;
-    font-weight:600;
-    color:#fff;
-}
-
-.btn-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-
-.btn-secondary{
-    background:rgba(30,30,50,.85);
-    border:1px solid rgba(255,255,255,.15);
-    border-radius:16px;
-    padding:18px;
-    font-size:15px;
-    color:#e0e0e0;
-}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Inter',sans-serif;}
+body{background:radial-gradient(ellipse at top,#0a0a1f 0%,#000 70%);color:#fff;min-height:100vh;overflow-x:hidden;}
+.stars-bg{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:1;}
+.star{position:absolute;border-radius:50%;opacity:0.6;animation:twinkle 4s ease-in-out infinite;}
+.star.big{width:2px;height:2px;}
+.star.medium{width:1px;height:1px;}
+.star.small{width:0.5px;height:0.5px;}
+@keyframes twinkle{0%,100%{opacity:0.4;transform:scale(1);}50%{opacity:1;transform:scale(1.4);}}
+.container{max-width:400px;margin:0 auto;padding:28px 24px;position:relative;z-index:10;min-height:100vh;padding-bottom:100px;}
+.header{text-align:center;margin-bottom:20px;}
+.logo{font-size:36px;font-weight:700;background:linear-gradient(135deg,#4da8ff 0%,#7dc8ff 50%,#a8d8ff 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-shadow:0 0 20px rgba(77,168,255,0.3);margin-bottom:8px;}
+.subtitle{font-size:15px;color:#b8b8d0;font-weight:400;background: rgba(20,20,35,0.8);padding:6px 12px;border-radius:20px;display:inline-block;backdrop-filter: blur(20px); border:1px solid rgba(77,168,255,0.1);}
+.tabs{display:flex; gap:8px; margin-bottom:16px;}
+.tab{flex:1; padding:10px; background: rgba(30,30,50,0.8); border-radius:12px; text-align:center; cursor:pointer; user-select:none; transition:0.3s;}
+.tab.active{background: linear-gradient(135deg,#4da8ff,#7dc8ff); color:#000;}
+.tab-content{display:none;}
+.tab-content.active{display:block;}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;}
+.stat-card{background: rgba(20,20,35,0.9); backdrop-filter:blur(20px); border:1px solid rgba(77,168,255,0.2); border-radius:16px; padding:16px; text-align:center;}
+.balance,.level-display{font-size:28px;font-weight:700;background:linear-gradient(135deg,#4da8ff,#7dc8ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.stat-value{font-size:26px;font-weight:700;color:#4da8ff;margin-bottom:4px;}
+.stat-label{font-size:14px;color:#9a9ab0;font-weight:500;}
+.map-section{background: rgba(10,10,25,0.95);backdrop-filter: blur(25px);border:1px solid rgba(77,168,255,0.15);border-radius:20px;padding:16px; margin-bottom:16px;}
+#map{width:100%; height:220px; border-radius:16px; box-shadow:0 8px 32px rgba(0,0,0,0.4);}
+.action-section{display:flex; flex-direction:column; gap:12px; margin-bottom:16px;}
+.btn-main,.btn-secondary{padding:12px 16px; border-radius:12px; border:none; cursor:pointer; font-weight:600; transition:0.3s;}
+.btn-main{background:linear-gradient(135deg,rgba(77,168,255,0.2),rgba(125,200,255,0.1)); color:#fff;}
+.btn-main:hover{background:rgba(77,168,255,0.3);}
+.btn-secondary{background:rgba(30,30,50,0.8); color:#e0e0e0;}
+.btn-secondary:hover{background:rgba(50,50,75,0.9);}
+.upgrade-card{background: rgba(20,20,35,0.9); padding:12px; border-radius:12px; margin-bottom:12px;}
+.quests-section .quest-card{margin-bottom:10px; padding:10px; background: rgba(30,30,50,0.8); border-radius:8px;}
+.quests-section .quest-card button{margin-top:6px; padding:6px 10px; border-radius:6px; border:none; cursor:pointer; background:#4da8ff; color:#000;}
 </style>
 </head>
-
 <body>
-
 <div class="stars-bg" id="stars"></div>
-
 <div class="container">
-    <div class="header">
-        <div class="logo">CryptoQuest</div>
-        <div class="subtitle">AR Token Hunt • Москва 2026</div>
-    </div>
+<div class="header">
+<div class="logo">CryptoQuest</div>
+<div class="subtitle">AR Token Hunt • Москва 2026</div>
+</div>
 
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="balance" id="balance">0 QTZ</div>
-            <div class="stat-label">Твой баланс</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-value">18</div>
-            <div class="stat-label">активных зон</div>
-        </div>
-    </div>
+<div class="tabs">
+<div class="tab active" data-tab="main">Главная</div>
+<div class="tab" data-tab="upgrades">Прокачки</div>
+<div class="tab" data-tab="quests">Задания</div>
+</div>
 
-    <div class="map-section">
-        <div class="map-header">🗺️ Карта сокровищ</div>
-        <div id="map"></div>
-    </div>
+<div class="tab-content active" id="main">
+<div class="stats-grid">
+<div class="stat-card">
+<div class="balance" id="balance">0 QTZ</div>
+<div class="level-display" id="level">Уровень: 1</div>
+<div class="stat-label">Твой баланс</div>
+</div>
+<div class="stat-card">
+<div class="stat-value" id="activeZones">0</div>
+<div class="stat-label">Активных зон</div>
+</div>
+</div>
 
-    <div class="action-section">
-        <button class="btn-main" id="startQuestBtn">🚀 Запустить квест</button>
-        <div class="btn-grid">
-            <button class="btn-secondary" id="scanBtn">🔍 AR сканер</button>
-            <button class="btn-secondary" id="marketBtn">💎 P2P рынок</button>
-        </div>
-    </div>
+<div class="map-section">
+<div id="map"></div>
+</div>
+
+<div class="action-section">
+<button class="btn-main" id="startQuestBtn">🚀 Запустить квест</button>
+<div style="display:flex; gap:8px;">
+<button class="btn-secondary" id="scanBtn">🔍 AR сканер</button>
+<button class="btn-secondary" id="marketBtn">💎 P2P рынок</button>
+</div>
+</div>
+</div>
+
+<div class="tab-content" id="upgrades">
+<div class="upgrade-card">
+<div>📍 Точность локации: <span id="upgradeLocation">1 уровень</span></div>
+<button onclick="buyUpgrade('location')">Повысить</button>
+</div>
+<div class="upgrade-card">
+<div>⏱️ Снижение задержки сканирования: <span id="upgradeCooldown">1 уровень</span></div>
+<button onclick="buyUpgrade('cooldown')">Повысить</button>
+</div>
+<div class="upgrade-card">
+<div>💰 Бонус за сканирование: <span id="upgradeReward">1 уровень</span></div>
+<button onclick="buyUpgrade('reward')">Повысить</button>
+</div>
+<div class="upgrade-card">
+<div>🔓 Доступ к новым точкам: <span id="upgradeAccess">1 уровень</span></div>
+<button onclick="buyUpgrade('access')">Повысить</button>
+</div>
+</div>
+
+<div class="tab-content" id="quests">
+<div class="quests-section">
+<h2>🎯 Задания</h2>
+<div id="questsList"></div>
+</div>
+</div>
 </div>
 
 <script>
-/* ===== STARS ===== */
-for(let i=0;i<120;i++){
-    const s=document.createElement('div');
-    s.className='star';
-    s.style.width=s.style.height=Math.random()>0.5?'2px':'1px';
-    s.style.left=Math.random()*100+'%';
-    s.style.top=Math.random()*100+'%';
-    document.getElementById('stars').appendChild(s);
-}
+'use strict';
 
-/* ===== TELEGRAM ===== */
-const tg=Telegram.WebApp;
-tg.ready();
-tg.expand();
-
-let balance=0;
-function updateBalance(v){
-    balance+=v;
-    document.getElementById('balance').innerText=balance+' QTZ';
-    tg.MainButton.setText('💰 '+balance+' QTZ');
-}
-tg.MainButton.setText('💰 0 QTZ').show();
-
-/* ===== BUTTONS ===== */
-startQuestBtn.onclick=()=>{
-    updateBalance(5);
-    tg.showAlert('🚀 Квест запущен\n+5 QTZ');
-};
-
-scanBtn.onclick=()=>{
-    if(!tg.showScanQrPopup){
-        tg.showAlert('QR сканер недоступен');
-        return;
+// Звёзды
+const starsContainer = document.getElementById('stars');
+['big','medium','small'].forEach(size=>{
+    for(let i=0;i<50;i++){
+        const star=document.createElement('div');
+        star.className='star '+size;
+        star.style.left=Math.random()*100+'%';
+        star.style.top=Math.random()*100+'%';
+        star.style.animationDelay=Math.random()*5+'s';
+        star.style.animationDuration=(Math.random()*3+2)+'s';
+        starsContainer.appendChild(star);
     }
-    tg.showScanQrPopup(
-        {text:'Наведи камеру на QR-код'},
-        ()=>{
-            tg.closeScanQrPopup();
-            updateBalance(5);
-            tg.showAlert('✅ QR найден\n+5 QTZ');
-        }
-    );
-};
-
-marketBtn.onclick=()=>{
-    tg.showAlert('💎 P2P рынок скоро');
-};
-
-/* ===== MAP + GPS ===== */
-let map,userMarker;
-
-map=L.map('map',{zoomControl:false,attributionControl:false})
-    .setView([55.7558,37.6176],11);
-
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19})
-.addTo(map);
-
-const spots=[
-    ['Трубная площадь',55.7655,37.6203],
-    ['Парк Горького',55.7301,37.6010],
-    ['м. Щёлковская',55.8094,37.7983]
-];
-
-spots.forEach(s=>{
-    L.circleMarker([s[1],s[2]],{
-        radius:8,color:'#4da8ff',fillOpacity:.9
-    }).addTo(map)
-    .bindPopup(`<b>${s[0]}</b><br>🔍 Ищи QR рядом`);
 });
 
-if(navigator.geolocation){
-    navigator.geolocation.watchPosition(pos=>{
-        const lat=pos.coords.latitude;
-        const lng=pos.coords.longitude;
-        if(!userMarker){
-            userMarker=L.circleMarker([lat,lng],{
-                radius:8,color:'#00d4ff',fillOpacity:1
-            }).addTo(map);
-        }else{
-            userMarker.setLatLng([lat,lng]);
-        }
-    },()=>{}, {enableHighAccuracy:true});
+// Tabs
+document.querySelectorAll('.tab').forEach(tab=>{
+    tab.addEventListener('click',()=>{
+        document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById(tab.dataset.tab).classList.add('active');
+    });
+});
+
+// Telegram WebApp
+const tg = window.Telegram?.WebApp;
+tg?.ready();
+tg?.expand();
+tg?.MainButton?.setText('💰 Кошелёк').show().onClick(()=>alert(`Баланс: ${balance} QTZ`));
+
+// Баланс, прокачки и уровни
+let balance=0;
+let exp=0;
+let level=1;
+let upgrades={
+    location:{level:1},
+    cooldown:{level:1},
+    reward:{level:1},
+    access:{level:1}
+};
+function gainExp(amount){
+    exp+=amount;
+    let nextLevel=level*10;
+    if(exp>=nextLevel){level++; exp=0; document.getElementById('level').innerText='Уровень: '+level; renderMapMarkers(); renderQuests();}
+}
+function buyUpgrade(type){
+    const cost = upgrades[type].level*5;
+    if(balance>=cost){
+        balance-=cost;
+        upgrades[type].level++;
+        updateUpgradesUI();
+        updateBalance();
+        renderMapMarkers();
+        renderQuests();
+    } else alert('Недостаточно QTZ');
+}
+function updateUpgradesUI(){
+    document.getElementById('upgradeLocation').innerText=upgrades.location.level+' уровень';
+    document.getElementById('upgradeCooldown').innerText=upgrades.cooldown.level+' уровень';
+    document.getElementById('upgradeReward').innerText=upgrades.reward.level+' уровень';
+    document.getElementById('upgradeAccess').innerText=upgrades.access.level+' уровень';
+}
+function updateBalance(){document.getElementById('balance').innerText=balance+' QTZ';}
+
+// Ежедневные квесты
+let dailyQuests=[];
+function generateDailyQuests(){
+    dailyQuests=[
+        {id:'daily1',name:'Найди 2 QR-кода сегодня',progress:0,goal:2,reward:5,completed:false,daily:true},
+        {id:'daily2',name:'Сканируй центральную точку',progress:0,goal:1,reward:8,completed:false,daily:true}
+    ];
+    renderQuests();
+}
+generateDailyQuests();
+
+// Задания
+let quests = [
+    {id:'secretQuest',name:'🔒 Секретное задание',progress:0,goal:1,reward:20,completed:false,secret:true,unlockLevel:2}
+];
+function renderQuests(){
+    const container=document.getElementById('questsList');
+    container.innerHTML='';
+    [...dailyQuests,...quests].forEach(q=>{
+        if(q.secret && upgrades.access.level<q.unlockLevel) return;
+        let status=q.completed?'✅ Выполнено':`${q.progress}/${q.goal}`;
+        let btn=q.completed?'':`<button onclick="completeQuest('${q.id}')">Отметить прогресс</button>`;
+        container.innerHTML+=`<div class="quest-card"><div>${q.name}</div><div>Прогресс: ${status}</div>${btn}</div>`;
+    });
+}
+function completeQuest(id){
+    let q=[...dailyQuests,...quests].find(x=>x.id===id);
+    if(!q || q.completed) return;
+    q.progress++;
+    if(q.progress>=q.goal){q.completed=true; balance+=q.reward; gainExp(5); updateBalance(); alert(`🎉 Задание "${q.name}" выполнено! +${q.reward} QTZ`);}
+    renderQuests();
 }
 
-setTimeout(()=>map.invalidateSize(),400);
-</script>
+// Карта и точки
+let mapInitialized=false;
+let map;
+let questSpots=[
+    {id:'tubnaya',name:'Трубная пл.',coords:[55.7655,37.6203],color:'#4da8ff',hidden:false},
+    {id:'mitino',name:'Радиорынок Митино',coords:[55.8451,37.3614],color:'#7dc8ff',hidden:false},
+    {id:'gorky',name:'Парк Горького',coords:[55.7301,37.6010],color:'#4da8ff',hidden:false},
+    {id:'dns',name:'DNS Мытищи',coords:[55.9105,37.7365],color:'#7dc8ff',hidden:false},
+    {id:'shchel',name:'Метро Щёлковское',coords:[55.8199,37.8822],color:'#7dc8ff',hidden:true},
+];
+function initMap(){
+    if(mapInitialized||!window.L)return;
+    mapInitialized=true;
+    map=L.map('map',{zoomControl:false,attributionControl:false,minZoom:10}).setView([55.7558,37.6176],11);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:''}).addTo(map);
+    renderMapMarkers();
+}
+function renderMapMarkers(){
+    map.eachLayer((layer)=>{if(layer instanceof L.CircleMarker) map.removeLayer(layer);});
+    questSpots.forEach(spot=>{
+        if(spot.hidden && upgrades.access.level<2) return;
+        const latOffset=(Math.random()-0.5)/upgrades.location.level;
+        const lonOffset=(Math.random()-0.5)/upgrades.location.level;
+        const marker=L.circleMarker([spot.coords[0]+latOffset, spot.coords[1]+lonOffset],{radius:8,color:spot.color,weight:2,fillColor:spot.color,fillOpacity:0.85}).addTo(map);
+        marker.bindPopup(`<b>${spot.name}</b><br><span style="color:${spot.color}">🔍 Ищи QR-код рядом!</span>`);
+        marker.on('click',()=>{
+            const reward=1*upgrades.reward.level;
+            balance+=reward; gainExp(2); updateBalance();
+            alert(`📍 ${spot.name} — QR-код найден! +${reward} QTZ`);
+            completeQuest('daily1');
+            if(level>=2) completeQuest('secretQuest');
+        });
+    });
+    document.getElementById('activeZones').innerText=questSpots.length;
+}
+window.addEventListener('load',initMap);
+setTimeout(initMap,1000);
 
+// Кнопки
+document.getElementById('startQuestBtn').addEventListener('click',()=>{alert('🚀 Квест запущен! Сканируй QR-коды для наград');});
+document.getElementById('scanBtn').addEventListener('click',()=>{
+    if(tg?.showScanQrPopup){
+        tg.showScanQrPopup({text:'Наведи камеру на QR-код'},(data)=>{
+            const reward=5*upgrades.reward.level;
+            balance+=reward; gainExp(2); updateBalance();
+            alert(`✅ QR-код найден! +${reward} QTZ`);
+            completeQuest('daily1');
+            if(level>=2) completeQuest('secretQuest');
+        });
+    } else {balance+=3; gainExp(2); updateBalance(); alert('🔍 Тестовый скан: +3 QTZ');}
+});
+document.getElementById('marketBtn').addEventListener('click',()=>alert('💎 P2P рынок\nСкоро здесь будет:\n• Купить QTZ\n• Продать QTZ\n• Обмен на TON'));
+
+// Ежедневный сброс
+setInterval(()=>{
+    const now=new Date();
+    if(now.getHours()===0 && now.getMinutes()===0){ // каждый день в 00:00
+        generateDailyQuests();
+        dailyQuests.forEach(q=>{q.completed=false; q.progress=0;});
+        alert('🗓️ Новые ежедневные задания!');
+        renderQuests();
+    }
+},60000);
+</script>
 </body>
 </html>
