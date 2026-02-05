@@ -8,10 +8,9 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
+/* Сброс и базовые стили */
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Inter',sans-serif;}
 body{background:radial-gradient(ellipse at top,#0a0a1f 0%,#000 70%);color:#fff;min-height:100vh;overflow-x:hidden;position:relative;}
-
-/* Звёзды */
 .stars-bg{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:1;}
 .star{position:absolute;border-radius:50%;opacity:0.6;background:radial-gradient(circle,#4da8ff 0%,transparent 70%);animation:twinkle 4s ease-in-out infinite;}
 .star.big{width:2px;height:2px;}
@@ -21,15 +20,13 @@ body{background:radial-gradient(ellipse at top,#0a0a1f 0%,#000 70%);color:#fff;m
 
 /* Контейнер */
 .container{max-width:400px;margin:0 auto;padding:28px 24px;position:relative;z-index:10;min-height:100vh;padding-bottom:100px;}
-
-/* Заголовок */
 .header{text-align:center;margin-bottom:24px;}
 .logo{font-size:36px;font-weight:700;background:linear-gradient(135deg,#4da8ff 0%,#7dc8ff 50%,#a8d8ff 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-shadow:0 0 20px rgba(77,168,255,0.3);margin-bottom:8px;}
 .subtitle{font-size:15px;color:#b8b8d0;font-weight:400;background: rgba(20,20,35,0.8);padding:8px 16px;border-radius:20px;display:inline-block;backdrop-filter: blur(20px); border:1px solid rgba(77,168,255,0.1);}
 
 /* Вкладки */
 .tabs{display:flex; gap:8px; margin-bottom:16px;}
-.tab{flex:1; padding:10px; background: rgba(30,30,50,0.8); border-radius:12px; text-align:center; cursor:pointer; user-select:none;}
+.tab{flex:1; padding:10px; background: rgba(30,30,50,0.8); border-radius:12px; text-align:center; cursor:pointer; user-select:none; transition:0.15s;}
 .tab.active{background: linear-gradient(135deg,#4da8ff,#7dc8ff); color:#000;}
 .tab-content{display:none;}
 .tab-content.active{display:block;}
@@ -64,11 +61,14 @@ button{outline:none; border:none; font-family:'Inter',sans-serif; user-select:no
 .level-bar-bg{width:100%; height:12px; background: rgba(77,168,255,0.15); border-radius:8px; overflow:hidden;}
 .level-bar-fill{width:0%; height:100%; background: linear-gradient(90deg,#4da8ff,#7dc8ff); border-radius:8px 0 0 8px;}
 
+/* Прогресс квеста */
+.quest-progress-bg{width:100%; height:10px; background: rgba(77,168,255,0.2); border-radius:6px; overflow:hidden; margin-top:6px;}
+.quest-progress-fill{height:100%; background: linear-gradient(90deg,#4da8ff,#7dc8ff); width:0%; border-radius:6px 0 0 6px;}
+
 /* Модальные окна */
 .modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);display:none;justify-content:center;align-items:center;z-index:50;}
 .modal-content{width:90%;height:70%;border-radius:16px;overflow:hidden;background:rgba(10,10,25,0.95);position:relative;border:2px solid #4da8ff;box-shadow:0 0 20px rgba(77,168,255,0.4);}
-.modal-close{position:absolute;top:10px;right:10px;color:#fff;font-size:24px;cursor:pointer;z-index:10;}
-.modal-minimize{position:absolute;top:10px;right:50px;color:#fff;font-size:20px;cursor:pointer;z-index:10;}
+.modal-close{position:absolute;top:10px;right:10px;color:#fff;font-size:24px;cursor:pointer;z-index:100;}
 #map{width:100%;height:100%;}
 </style>
 </head>
@@ -90,7 +90,7 @@ button{outline:none; border:none; font-family:'Inter',sans-serif; user-select:no
 <div class="tab-content active" id="main">
     <div class="stats-grid">
         <div class="stat-card">
-            <div class="balance" id="balance">0 QTZ</div>
+            <div class="balance" id="balance">1000 QTZ</div>
             <div class="stat-label">Твой баланс</div>
         </div>
         <div class="stat-card">
@@ -101,7 +101,7 @@ button{outline:none; border:none; font-family:'Inter',sans-serif; user-select:no
 
     <div class="level-bar-container">
         <div class="level-info">
-            <span>Уровень 1</span>
+            <span id="levelNum">Уровень 1</span>
             <span id="levelPercent">0%</span>
         </div>
         <div class="level-bar-bg">
@@ -123,19 +123,19 @@ button{outline:none; border:none; font-family:'Inter',sans-serif; user-select:no
     <div class="upgrade-card">
         <span>Точная локация</span>
         <span class="upgrade-price">Цена: 20 QTZ</span>
-        <button>Повысить уровень</button>
+        <button class="upgrade-btn" data-cost="20" data-type="accuracy">Повысить уровень</button>
         <div class="info-btn" data-info="Локация будет точнее на 20 метров.">i</div>
     </div>
     <div class="upgrade-card">
         <span>Скорость сканирования</span>
         <span class="upgrade-price">Цена: 30 QTZ</span>
-        <button>Повысить уровень</button>
+        <button class="upgrade-btn" data-cost="30" data-type="speed">Повысить уровень</button>
         <div class="info-btn" data-info="Сокращает задержку между сканами на 10 секунд.">i</div>
     </div>
     <div class="upgrade-card">
         <span>Бонус за сканирование</span>
         <span class="upgrade-price">Цена: 50 QTZ</span>
-        <button>Повысить уровень</button>
+        <button class="upgrade-btn" data-cost="50" data-type="bonus">Повышает награду QR +5 QTZ.</button>
         <div class="info-btn" data-info="Увеличивает награду с каждого QR на +5 QTZ.">i</div>
     </div>
 </div>
@@ -143,21 +143,19 @@ button{outline:none; border:none; font-family:'Inter',sans-serif; user-select:no
 <div class="tab-content" id="quests">
     <div class="upgrade-card">
         <span>Найди секретный QR-код на Трубной площади</span>
-        <button>Выполнить квест</button>
+        <div class="quest-progress-bg"><div class="quest-progress-fill" id="quest1Progress"></div></div>
+        <button class="quest-btn">Выполнить квест</button>
     </div>
 </div>
 </div>
 
-<!-- Модальное окно карты -->
 <div class="modal" id="mapModal">
     <div class="modal-content">
         <span class="modal-close" id="closeMap">&times;</span>
-        <span class="modal-minimize" id="minMap">&#8211;</span>
         <div id="map"></div>
     </div>
 </div>
 
-<!-- Модальное окно информации -->
 <div class="modal" id="infoModal">
     <div class="modal-content" style="width:80%;height:auto;padding:20px;">
         <span class="modal-close" id="closeInfo">&times;</span>
@@ -168,10 +166,10 @@ button{outline:none; border:none; font-family:'Inter',sans-serif; user-select:no
 <script>
 // Звёзды
 (function(){
-    const container = document.getElementById('stars');
-    const sizes = ['big','medium','small'];
+    const container=document.getElementById('stars');
+    const sizes=['big','medium','small'];
     for(let i=0;i<150;i++){
-        const star = document.createElement('div');
+        const star=document.createElement('div');
         star.className='star '+sizes[Math.floor(Math.random()*sizes.length)];
         star.style.top=Math.random()*100+'%';
         star.style.left=Math.random()*100+'%';
@@ -191,44 +189,74 @@ document.querySelectorAll('.tab').forEach(tab=>{
     });
 });
 
-// Прогресс уровня
-document.getElementById('levelFill').style.width='0%';
-document.getElementById('levelPercent').innerText='0%';
+// Пользователь
+let userExp=0,userLevel=1,userBalance=1000;
+let upgrades={accuracy:0,speed:0,bonus:0};
+const expPerLevel=100;
+function updateLevelBar(){
+    const percent=Math.min(100,(userExp/expPerLevel)*100);
+    document.getElementById('levelFill').style.width=percent+'%';
+    document.getElementById('levelPercent').innerText=Math.floor(percent)+'%';
+    document.getElementById('levelNum').innerText='Уровень '+userLevel;
+}
+updateLevelBar();
 
-// Карта
-let map, questSpots=[
-    {id:'tubnaya', name:'Трубная пл.', coords:[55.7655,37.6203], color:'#4da8ff'},
-    {id:'mitino', name:'Радиорынок Митино', coords:[55.8451,37.3614], color:'#7dc8ff'},
-    {id:'gorky', name:'Парк Горького', coords:[55.7301,37.6010], color:'#4da8ff'},
-    {id:'dns', name:'DNS Мытищи', coords:[55.9105,37.7365], color:'#7dc8ff'},
-    {id:'shchelkovskoe', name:'Метро Щёлковское', coords:[55.8200,37.8530], color:'#7dc8ff'}
-];
-
-// Открытие карты
-document.getElementById('openMapBtn').addEventListener('click',()=>{
-    document.getElementById('mapModal').style.display='flex';
-    if(!map){
-        map = L.map('map',{zoomControl:false, attributionControl:false}).setView([55.7558,37.6176],11);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19, attribution:''}).addTo(map);
-        questSpots.forEach(spot=>{
-            const marker=L.circleMarker(spot.coords,{radius:8,color:spot.color,weight:2,fillColor:spot.color,fillOpacity:0.85}).addTo(map);
-            marker.bindPopup(`<b>${spot.name}</b><br>🔍 Ищи QR-код рядом!`);
-        });
-        document.getElementById('activeZones').innerText = questSpots.length;
-    }
+// Квесты
+let quests=[{id:'quest1',name:'Найди секретный QR-код на Трубной площади',progress:0,rewardExp:20,rewardQtZ:5,completed:false}];
+document.querySelectorAll('.quest-btn').forEach((btn,index)=>{
+    btn.addEventListener('click',()=>{
+        let quest=quests[index];
+        if(quest.completed){alert('Квест уже выполнен!'); return;}
+        quest.completed=true;
+        const bonus=upgrades.bonus*5;
+        userExp+=quest.rewardExp;
+        userBalance+=quest.rewardQtZ+bonus;
+        document.getElementById('balance').innerText=userBalance+' QTZ';
+        document.getElementById('quest1Progress').style.width='100%';
+        if(userExp>=expPerLevel){userLevel+=1; userExp-=expPerLevel; alert('Поздравляем! Вы достигли уровня '+userLevel+'!');}
+        updateLevelBar();
+        alert(`Квест выполнен! +${quest.rewardExp} XP, +${quest.rewardQtZ+bonus} QTZ`);
+    });
 });
-// Закрытие и минимизация карты
-document.getElementById('closeMap').addEventListener('click',()=>{document.getElementById('mapModal').style.display='none';});
-document.getElementById('minMap').addEventListener('click',()=>{document.getElementById('mapModal').style.display='none';});
 
-// Информация по прокачке
+// Прокачки
+document.querySelectorAll('.upgrade-btn').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+        const cost=parseInt(btn.dataset.cost);
+        const type=btn.dataset.type;
+        if(userBalance>=cost){
+            userBalance-=cost;
+            upgrades[type]+=1;
+            document.getElementById('balance').innerText=userBalance+' QTZ';
+            alert(`Прокачка "${type}" выполнена! Текущий уровень: ${upgrades[type]}`);
+        }else{alert('Недостаточно токенов для прокачки!');}
+    });
+});
+
+// Информация
 document.querySelectorAll('.info-btn').forEach(btn=>{
     btn.addEventListener('click',()=>{
-        document.getElementById('infoText').innerText = btn.dataset.info;
+        document.getElementById('infoText').innerText=btn.dataset.info;
         document.getElementById('infoModal').style.display='flex';
     });
 });
 document.getElementById('closeInfo').addEventListener('click',()=>{document.getElementById('infoModal').style.display='none';});
-</script>
-</body>
-</html>
+
+// Карта
+let map;
+let questSpots=[
+{id:'tubnaya',name:'Трубная пл.',coords:[55.7655,37.6203],color:'#4da8ff'},
+{id:'mitino',name:'Радиорынок Митино',coords:[55.8451,37.3614],color:'#7dc8ff'},
+{id:'gorky',name:'Парк Горького',coords:[55.7301,37.6010],color:'#4da8ff'},
+{id:'dns',name:'DNS Мытищи',coords:[55.9105,37.7365],color:'#7dc8ff'},
+{id:'shchelkovskoe',name:'Метро Щёлковское',coords:[55.8200,37.8530],color:'#7dc8ff'}
+];
+document.getElementById('activeZones').innerText=questSpots.length;
+
+document.getElementById('openMapBtn').addEventListener('click',()=>{
+    document.getElementById('mapModal').style.display='flex';
+    if(!map){
+        map=L.map('map',{zoomControl:false,attributionControl:false}).setView([55.7558,37.6176],11);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:''}).addTo(map);
+        questSpots.forEach(spot=>{
+            const marker=L.circleMarker(
